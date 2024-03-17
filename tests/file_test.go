@@ -15,10 +15,10 @@ import (
 )
 
 func TestFileLoggerDemo01(t *testing.T) {
-	// projectPath := core.GetProjectAbsPath()
-	projectPath := "./"
-	log := core.NewFileLogger("DEBUG", projectPath, "test.log", 10*1024)
-	for i := 0; i < 10; i++ {
+	projectPath := core.GetProjectAbsPath()
+	// projectPath := "./"
+	log := core.NewLogger("info", projectPath, "app.log", 50*1024*1024, true, true, true)
+	for i := 0; i < 10000; i++ {
 		log.Debug("这是一次打印：debug")
 		log.Trace("这是一次打印：trace")
 		log.Info("这是一次打印：info")

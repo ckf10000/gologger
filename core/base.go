@@ -31,7 +31,8 @@ const (
 )
 
 const DATEFORMATTER string = "2006-01-02 15:04:05.000"
-const MSGSTANDARDFORMATTER string = "%s - [PID-10] - [Thread-20] - [%s] - %s - <%s> - [Line-%d] - %s\n"
+const DATEIDFORMATTER string = "20060102150405.000"
+const MSGSTANDARDFORMATTER string = "%s - [PID-%d] - [Thread-%d] - [%s] - %s - <%s> - [Line-%d] - %s\n"
 
 // 告警级别常量映射
 var logLevelToString = map[LogLevel]string{
@@ -54,51 +55,44 @@ func init() {
 
 // Logger 接口定义了日志记录器的行为
 type Logger interface {
-	Debug(message string, a ...interface{})
-	Trace(message string, a ...interface{})
-	Info(message string, a ...interface{})
-	Warning(message string, a ...interface{})
-	Error(message string, a ...interface{})
-	Fatal(message string, a ...interface{})
-	logHandler(lv LogLevel, format string, a ...interface{})
+	Debug(format string, args ...interface{})
+	Trace(format string, args ...interface{})
+	Info(format string, args ...interface{})
+	Warning(format string, args ...interface{})
+	Error(format string, args ...interface{})
+	Fatal(format string, args ...interface{})
 }
 
-// BaseLogger 通用的日志记录器
-type BaseLogger struct {
-	Level LogLevel // 日志级别
+// LogEntry 日志条目结构
+type LogEntry struct {
+	Time      time.Time // 日志记录时间
+	Message   string    // 日志内容
+	Level     LogLevel  // 日志级别
+	FileName  string    // 日志文件名
+	Line      int       // 代码行数
+	FuncName  string    // 函数名/方法名
+	ProcessId int       // 进程ID
+	ThreadId  int       // 线程ID
 }
 
-func NewBaseLogger(levelStr string) BaseLogger {
-	logLevel, err := ParseLogLevel(levelStr)
-	if err != nil {
-		panic(err)
-	}
-	return BaseLogger{
-		Level: logLevel,
-	}
-}
-
+// ParseLogLevel 将字符串日志级别，转换成 LogLevel 类型
 func ParseLogLevel(levelStr string) (LogLevel, error) {
 	strTemp := strings.ToUpper(levelStr)
 	level, ok := stringToLogLevel[strTemp]
 	if !ok {
-		return UNKNOWN, errors.New("无效的日志级别")
+		return UNKNOWN, errors.New("invalid log level")
 	}
 	return level, nil
 }
 
-func getLogString(lv LogLevel) string {
+// GetLogString 获取LogLevel类型的日志级别对应的字符串
+func GetLogString(lv LogLevel) string {
 	return logLevelToString[lv]
 }
 
-func (b BaseLogger) enable(logLevel LogLevel) bool {
-	return logLevel >= b.Level
-}
-
-func MsgFormatter(lv LogLevel, format string, a ...interface{}) string {
-	msg := fmt.Sprintf(format, a...)
-	now := time.Now()
-	funcName, fileName, lineNo := GetInfo(5)
-	formattedString := fmt.Sprintf(MSGSTANDARDFORMATTER, now.Format(DATEFORMATTER), getLogString(lv), msg, funcName, lineNo, fileName)
-	return formattedString
+// formatLogEntry 格式化日志条目
+func FormatLogEntry(entry *LogEntry) string {
+	return fmt.Sprintf(
+		MSGSTANDARDFORMATTER, entry.Time.Format(DATEFORMATTER), entry.ProcessId, entry.ThreadId,
+		GetLogString(entry.Level), entry.Message, entry.FuncName, entry.Line, entry.FileName)
 }

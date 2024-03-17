@@ -16,7 +16,7 @@ import (
 
 // TestConsoleLoggerDemo01 支持级别的控制
 func TestConsoleLoggerDemo01(t *testing.T) {
-	log := core.NewConsoleLogger("ERROR")
+	log := core.NewLogger("debug", "", "", 0, false, true, false)
 	log.Debug("这是一次打印：debug")
 	log.Trace("这是一次打印：trace")
 	log.Info("这是一次打印：info")
@@ -27,6 +27,6 @@ func TestConsoleLoggerDemo01(t *testing.T) {
 
 // TestConsoleLoggerDemo02 支持格式化打印
 func TestConsoleLoggerDemo02(t *testing.T) {
-	log := core.NewConsoleLogger("debug")
+	log := core.NewLogger("DEBUG", "", "", 0, false, true, false)
 	log.Error("这是一次打印：%s, %s", "Hello", "World")
 }

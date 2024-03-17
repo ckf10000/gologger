@@ -10,13 +10,13 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 )
 
 func GetInfo(skip int) (funcName, fileName string, lineNo int) {
@@ -36,13 +36,15 @@ func GetProjectAbsPath() string {
 	// 获取当前源码文件的路径
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		panic("Failed to get current file path")
+		fmt.Println("Get project path failed.")
+		return ""
 	}
 
 	// 将文件路径转换为绝对路径
 	absPath, err := filepath.Abs(filename)
 	if err != nil {
-		panic(err)
+		fmt.Println("Get project path failed.")
+		return ""
 	}
 	// 获取当前文件所在目录的路径
 	dir := filepath.Dir(absPath)
@@ -51,6 +53,23 @@ func GetProjectAbsPath() string {
 	// 获取项目根路径（假设项目根路径是 src 目录的父目录）
 	root := filepath.Join(dir, "..")
 	return root
+}
+
+// CreateDirectoryIfNotExists 判断目录是否存在，如果不存在，则递归式逐级创建，支持windows和linux
+func CreateDirectoryIfNotExists(filePath string) error {
+	// 检查目录是否存在
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		// 如果目录不存在则创建
+		err := os.MkdirAll(filePath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Directory '%s' created successfully.\n", filePath)
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
 
 // CheckFileSize 校验文件大小
@@ -63,26 +82,32 @@ func CheckFileSize(fileObj *os.File, size int64) bool {
 	return fileInfo.Size() >= size
 }
 
-// 切割文件
-func RotatingFile(fileObj *os.File, filePath string) (*os.File, error) {
-	// 需要切割日志文件
-	nowStr := time.Now().Format("20060102150405000")
-	fileInfo, err1 := fileObj.Stat()
-	if err1 != nil {
-		fmt.Println("get file info failed, err: ", err1)
-		return nil, err1
+// CreateFile 创建文件
+func CreateFile(fileName string) (*os.File, error) {
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		err := fmt.Sprintf("Failed to open log file %s, error: %s\n", fileName, err)
+		return nil, errors.New(err)
 	}
-	logName := path.Join(filePath, fileInfo.Name())        // 拿到当前日志文件的完整路径
-	newLogName := fmt.Sprintf("%s.bak%s", logName, nowStr) // 拼接一个日志文件备份的名字
+	return file, nil
+}
+
+// WriteFile 保存至文件
+func WriteFile(file *os.File, format string) {
+	_, err := fmt.Fprint(file, format)
+	// _, err := file.WriteString(format)
+	if err != nil {
+		fmt.Printf("Failed to write log to file, error: %s\n", err)
+	}
+}
+
+// 切割文件
+func RotatingFile(fileObj *os.File, fileName, bakFileName string) (*os.File, error) {
+	// 需要切割日志文件
 	// 1. 关闭当前日志文件
 	fileObj.Close()
 	// 2. 备份一下 rename xx.log --> xx.log.bak2024031617091
-	os.Rename(logName, newLogName)
+	os.Rename(fileName, bakFileName)
 	// 3. 打开一个新的日志文件
-	fileObj, err2 := os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err2 != nil {
-		fmt.Println("open new log file failed, err: ", err2)
-		return nil, err2
-	}
-	return fileObj, nil
+	return CreateFile(fileName)
 }
