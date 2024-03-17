@@ -10,8 +10,9 @@
 package tests
 
 import (
-	"gologger/core"
 	"testing"
+
+	"github.com/ckf10000/gologger/core"
 )
 
 func TestFileLoggerDemo01(t *testing.T) {

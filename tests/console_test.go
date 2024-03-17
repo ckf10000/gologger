@@ -10,8 +10,9 @@
 package tests
 
 import (
-	"gologger/core"
 	"testing"
+
+	"github.com/ckf10000/gologger/core"
 )
 
 // TestConsoleLoggerDemo01 支持级别的控制
