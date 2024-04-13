@@ -12,7 +12,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/ckf10000/gologger/v2/log"
+	"github.com/ckf10000/gologger/v1/log"
 )
 
 // TestConsoleLoggerDemo01 支持级别的控制
