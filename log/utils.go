@@ -1,4 +1,4 @@
-// Package core
+// Package log
 /***********************************************************************************************************************
 * ProjectName:  gologger
 * FileName:     utils.go
@@ -7,7 +7,7 @@
 * CreateDate:   2024/03/15 15:27:05
 * Copyright ©2011-2024. Hunan xyz Company limited. All rights reserved.
 * *********************************************************************************************************************/
-package core
+package log
 
 import (
 	"errors"
@@ -29,6 +29,20 @@ func GetInfo(skip int) (funcName, fileName string, lineNo int) {
 	funcName = funcNameSlice[len(funcNameSlice)-1]
 	fileName = path.Base(filePath)
 	return
+}
+
+// getExecuteFilePath 获取执行文件所在的目录
+func GetExecuteFilePath() string {
+	// 获取当前可执行文件的路径
+	exePath, err := os.Executable()
+	if err != nil {
+		fmt.Printf("Error getting executable path: %v\n", err)
+		return ""
+
+	}
+	// 获取可执行文件所在目录的路径
+	exeDir := filepath.Dir(exePath)
+	return exeDir
 }
 
 // GetProjectAbsPath 获取项目路径

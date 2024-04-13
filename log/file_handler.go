@@ -1,4 +1,4 @@
-// Package core
+// Package log
 /***********************************************************************************************************************
 * ProjectName:  gologger
 * FileName:     file_handler.go
@@ -7,7 +7,7 @@
 * CreateDate:   2024/03/15 14:15:17
 * Copyright ©2011-2024. Hunan xyz Company limited. All rights reserved.
 * *********************************************************************************************************************/
-package core
+package log
 
 import (
 	"fmt"

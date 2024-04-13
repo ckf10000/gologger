@@ -12,13 +12,14 @@ package tests
 import (
 	"testing"
 
-	"github.com/ckf10000/gologger/core"
+	"gologger/log"
 )
 
 func TestFileLoggerDemo01(t *testing.T) {
-	projectPath := core.GetProjectAbsPath()
+	projectPath := log.GetProjectAbsPath()
+	// projectPath := log.GetExecuteFilePath()
 	// projectPath := "./"
-	log := core.NewLogger("info", projectPath, "app.log", 50*1024*1024, true, true, true)
+	log := log.NewLogger("info", projectPath, "app.log", 50*1024*1024, true, true, true)
 	for i := 0; i < 10000; i++ {
 		log.Debug("这是一次打印：debug")
 		log.Trace("这是一次打印：trace")

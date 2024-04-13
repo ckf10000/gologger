@@ -1,4 +1,4 @@
-// Package core
+// Package log
 /***********************************************************************************************************************
 * ProjectName:  gologger
 * FileName:     base.go
@@ -7,7 +7,7 @@
 * CreateDate:   2024/03/15 14:29:35
 * Copyright ©2011-2024. Hunan xyz Company limited. All rights reserved.
 * *********************************************************************************************************************/
-package core
+package log
 
 import (
 	"errors"
