@@ -31,6 +31,7 @@ type FileLogger struct {
 	File            *os.File   // 日志文件句柄
 	ErrFile         *os.File   // 错误日志文件句柄
 	Lock            sync.Mutex // 互斥锁
+	FormatTemplate  string     // 日志输出模版
 }
 
 // GetLogFile 获取日志文件名，全路径
@@ -133,7 +134,7 @@ func (f *FileLogger) LogHandler(level LogLevel, format string, args ...interface
 
 	// 输出到控制台
 	if f.ConsoleOutput {
-		fmt.Print(FormatLogEntry(&logEntry))
+		fmt.Print(FormatLogEntry(f.FormatTemplate, &logEntry))
 	}
 
 	// 输出到日志文件
@@ -151,7 +152,7 @@ func (f *FileLogger) LogHandler(level LogLevel, format string, args ...interface
 			// 4. 将打开的新日志文件对象赋值给f.FileObj
 			f.File = fileObj
 		}
-		WriteFile(f.File, FormatLogEntry(&logEntry))
+		WriteFile(f.File, FormatLogEntry(f.FormatTemplate, &logEntry))
 		if level >= ERROR {
 			if CheckFileSize(f.ErrFile, f.MaxFileSize) {
 				// 需要切割日志文件
@@ -163,13 +164,13 @@ func (f *FileLogger) LogHandler(level LogLevel, format string, args ...interface
 				// 4. 将打开的新日志文件对象赋值给f.ErrFileObj
 				f.ErrFile = errFileObj
 			}
-			WriteFile(f.ErrFile, FormatLogEntry(&logEntry))
+			WriteFile(f.ErrFile, FormatLogEntry(f.FormatTemplate, &logEntry))
 		}
 	}
 }
 
 // NewFileLogger 创建文件日志记录器
-func NewLogger(levelStr, logFilePath, logFileName string, maxFileSize int64, enableErrOutput, consoleOutput, fileOutput bool) *FileLogger {
+func NewLogger(levelStr, logFilePath, logFileName, formatTemplate string, maxFileSize int64, enableErrOutput, consoleOutput, fileOutput bool) *FileLogger {
 	logLevel, err := ParseLogLevel(levelStr)
 	if err != nil {
 		panic(err)
@@ -180,6 +181,9 @@ func NewLogger(levelStr, logFilePath, logFileName string, maxFileSize int64, ena
 			panic(err)
 		}
 	}
+	if formatTemplate != SIMPLETEMPLATE && formatTemplate != STANDARDTEMPLATE {
+		panic(fmt.Sprintf("Only supported [%s, %s]", SIMPLETEMPLATE, STANDARDTEMPLATE))
+	}
 	fileLogger := &FileLogger{
 		Level:           logLevel,
 		FilePath:        logFilePath,
@@ -188,6 +192,7 @@ func NewLogger(levelStr, logFilePath, logFileName string, maxFileSize int64, ena
 		EnableErrOutput: enableErrOutput,
 		ConsoleOutput:   consoleOutput,
 		FileOutput:      fileOutput,
+		FormatTemplate:  formatTemplate,
 	}
 
 	// 创建日志文件

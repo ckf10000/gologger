@@ -30,9 +30,15 @@ const (
 	FATAL
 )
 
-const DATEFORMATTER string = "2006-01-02 15:04:05.000"
-const DATEIDFORMATTER string = "20060102150405.000"
-const MSGSTANDARDFORMATTER string = "%s - [PID-%d] - [Thread-%d] - [%s] - %s - <%s> - [Line-%d] - %s\n"
+// 定义日志模板类型常量
+const (
+	SIMPLETEMPLATE              = "simple"
+	STANDARDTEMPLATE            = "standard"
+	DATEFORMATTER        string = "2006-01-02 15:04:05.000"
+	DATEIDFORMATTER      string = "20060102150405.000"
+	MSGSIMPLEFORMATTER   string = "%s - [PID-%d] - [Thread-%d] - [%s] - %s\n"
+	MSGSTANDARDFORMATTER string = "%s - [PID-%d] - [Thread-%d] - [%s] - %s - <%s> - [Line-%d] - %s\n"
+)
 
 // 告警级别常量映射
 var logLevelToString = map[LogLevel]string{
@@ -63,7 +69,7 @@ type Logger interface {
 	Fatal(format string, args ...interface{})
 }
 
-// LogEntry 日志条目结构
+// LogEntry 日志条目结构,标准结构
 type LogEntry struct {
 	Time      time.Time // 日志记录时间
 	Message   string    // 日志内容
@@ -91,8 +97,13 @@ func GetLogString(lv LogLevel) string {
 }
 
 // formatLogEntry 格式化日志条目
-func FormatLogEntry(entry *LogEntry) string {
-	return fmt.Sprintf(
-		MSGSTANDARDFORMATTER, entry.Time.Format(DATEFORMATTER), entry.ProcessId, entry.ThreadId,
-		GetLogString(entry.Level), entry.Message, entry.FuncName, entry.Line, entry.FileName)
+func FormatLogEntry(formatTemplate string, entry *LogEntry) string {
+	if formatTemplate == SIMPLETEMPLATE {
+		return fmt.Sprintf(
+			MSGSIMPLEFORMATTER, entry.Time.Format(DATEFORMATTER), entry.ProcessId, entry.ThreadId, GetLogString(entry.Level), entry.Message)
+	} else {
+		return fmt.Sprintf(
+			MSGSTANDARDFORMATTER, entry.Time.Format(DATEFORMATTER), entry.ProcessId, entry.ThreadId,
+			GetLogString(entry.Level), entry.Message, entry.FuncName, entry.Line, entry.FileName)
+	}
 }
